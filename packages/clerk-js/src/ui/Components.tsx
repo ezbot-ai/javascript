@@ -7,7 +7,6 @@ import type {
   ClerkOptions,
   CreateOrganizationProps,
   EnvironmentResource,
-  GoogleOneTapProps,
   OrganizationProfileProps,
   SignInProps,
   SignUpProps,
@@ -37,7 +36,6 @@ import {
   LazyComponentRenderer,
   LazyImpersonationFabProvider,
   LazyModalRenderer,
-  LazyOneTapRenderer,
   LazyProviders,
   OrganizationSwitcherPrefetch,
 } from './lazyModules/providers';
@@ -61,7 +59,6 @@ export type ComponentControls = {
   }) => void;
   openModal: <
     T extends
-      | 'googleOneTap'
       | 'signIn'
       | 'signUp'
       | 'userProfile'
@@ -83,7 +80,6 @@ export type ComponentControls = {
   ) => void;
   closeModal: (
     modal:
-      | 'googleOneTap'
       | 'signIn'
       | 'signUp'
       | 'userProfile'
@@ -117,7 +113,6 @@ interface ComponentsProps {
 interface ComponentsState {
   appearance: Appearance | undefined;
   options: ClerkOptions | undefined;
-  googleOneTapModal: null | GoogleOneTapProps;
   signInModal: null | SignInProps;
   signUpModal: null | SignUpProps;
   userProfileModal: null | UserProfileProps;
@@ -197,7 +192,6 @@ const Components = (props: ComponentsProps) => {
   const [state, setState] = React.useState<ComponentsState>({
     appearance: props.options.appearance,
     options: props.options,
-    googleOneTapModal: null,
     signInModal: null,
     signUpModal: null,
     userProfileModal: null,
@@ -211,7 +205,6 @@ const Components = (props: ComponentsProps) => {
   });
 
   const {
-    googleOneTapModal,
     signInModal,
     signUpModal,
     userProfileModal,
@@ -321,15 +314,6 @@ const Components = (props: ComponentsProps) => {
 
     props.onComponentsMounted();
   }, []);
-
-  const mountedOneTapModal = (
-    <LazyOneTapRenderer
-      componentProps={googleOneTapModal}
-      globalAppearance={state.appearance}
-      componentAppearance={googleOneTapModal?.appearance}
-      startPath={buildVirtualRouterUrl({ base: '/one-tap', path: '' })}
-    />
-  );
 
   const mountedSignInModal = (
     <LazyModalRenderer
@@ -475,8 +459,6 @@ const Components = (props: ComponentsProps) => {
             />
           );
         })}
-
-        {googleOneTapModal && mountedOneTapModal}
         {signInModal && mountedSignInModal}
         {signUpModal && mountedSignUpModal}
         {userProfileModal && mountedUserProfileModal}

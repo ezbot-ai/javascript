@@ -12,7 +12,6 @@ const componentImportPaths = {
     import(/* webpackChunkName: "organizationswitcher" */ './../components/OrganizationSwitcher'),
   OrganizationList: () => import(/* webpackChunkName: "organizationlist" */ './../components/OrganizationList'),
   ImpersonationFab: () => import(/* webpackChunkName: "impersonationfab" */ './../components/ImpersonationFab'),
-  GoogleOneTap: () => import(/* webpackChunkName: "onetap" */ './../components/GoogleOneTap'),
   UserVerification: () => import(/* webpackChunkName: "userverification" */ './../components/UserVerification'),
   Waitlist: () => import(/* webpackChunkName: "waitlist" */ './../components/Waitlist'),
 } as const;
@@ -20,9 +19,6 @@ const componentImportPaths = {
 export const SignIn = lazy(() => componentImportPaths.SignIn().then(module => ({ default: module.SignIn })));
 
 export const SignInModal = lazy(() => componentImportPaths.SignIn().then(module => ({ default: module.SignInModal })));
-export const GoogleOneTap = lazy(() =>
-  componentImportPaths.GoogleOneTap().then(module => ({ default: module.OneTap })),
-);
 
 export const UserVerification = lazy(() =>
   componentImportPaths.UserVerification().then(module => ({ default: module.UserVerification })),
@@ -99,7 +95,6 @@ export const ClerkComponents = {
   OrganizationProfileModal,
   CreateOrganizationModal,
   UserVerificationModal,
-  GoogleOneTap,
   Waitlist,
   WaitlistModal,
 };

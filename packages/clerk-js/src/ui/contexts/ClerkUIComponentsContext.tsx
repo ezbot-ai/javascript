@@ -1,8 +1,8 @@
 import { deprecatedObjectProperty } from '@clerk/shared/deprecated';
 import { useClerk } from '@clerk/shared/react';
 import { snakeToCamel } from '@clerk/shared/underscore';
-import type { HandleOAuthCallbackParams, OrganizationResource, UserResource } from '@clerk/types';
-import React, { useCallback, useMemo } from 'react';
+import type { OrganizationResource, UserResource } from '@clerk/types';
+import React, { useMemo } from 'react';
 
 import { SIGN_IN_INITIAL_VALUE_KEYS, SIGN_UP_INITIAL_VALUE_KEYS } from '../../core/constants';
 import { buildURL, createDynamicParamParser } from '../../utils';
@@ -14,14 +14,10 @@ import type { ParsedQueryString } from '../router';
 import { useRouter } from '../router';
 import type {
   AvailableComponentCtx,
-  CreateOrganizationCtx,
-  GoogleOneTapCtx,
   OrganizationListCtx,
   OrganizationProfileCtx,
-  OrganizationSwitcherCtx,
   SignInCtx,
   SignUpCtx,
-  UserButtonCtx,
   UserProfileCtx,
   UserVerificationCtx,
   WaitlistCtx,
@@ -62,7 +58,7 @@ export type SignUpContextType = SignUpCtx & {
 };
 
 export const useSignUpContext = (): SignUpContextType => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as SignUpCtx;
+  const { componentName, ...ctx } = React.useContext(ComponentContext) || {};
   const { navigate } = useRouter();
   const { displayConfig } = useEnvironment();
   const { queryParams, queryString } = useRouter();
@@ -138,7 +134,7 @@ export type SignInContextType = SignInCtx & {
 };
 
 export const useSignInContext = (): SignInContextType => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as SignInCtx;
+  const { componentName, ...ctx } = React.useContext(ComponentContext) || {};
   const { navigate } = useRouter();
   const { displayConfig } = useEnvironment();
   const { queryParams, queryString } = useRouter();
@@ -235,7 +231,7 @@ export type UserProfileContextType = UserProfileCtx & {
 };
 
 export const useUserProfileContext = (): UserProfileContextType => {
-  const { componentName, customPages, ...ctx } = (React.useContext(ComponentContext) || {}) as UserProfileCtx;
+  const { componentName, customPages, ...ctx } = React.useContext(ComponentContext) || {};
   const { queryParams } = useRouter();
   const clerk = useClerk();
 
@@ -259,7 +255,7 @@ export const useUserProfileContext = (): UserProfileContextType => {
 export type UserVerificationContextType = UserVerificationCtx;
 
 export const useUserVerification = (): UserVerificationContextType => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as UserVerificationCtx;
+  const { componentName, ...ctx } = React.useContext(ComponentContext) || {};
 
   if (componentName !== 'UserVerification') {
     throw new Error('Clerk: useUserVerificationContext called outside of the mounted UserVerification component.');
@@ -272,7 +268,7 @@ export const useUserVerification = (): UserVerificationContextType => {
 };
 
 export const useUserButtonContext = () => {
-  const { componentName, customMenuItems, ...ctx } = (React.useContext(ComponentContext) || {}) as UserButtonCtx;
+  const { componentName, customMenuItems, ...ctx } = React.useContext(ComponentContext) || {};
   const clerk = useClerk();
   const { navigate } = useRouter();
   const { displayConfig } = useEnvironment();
@@ -329,7 +325,7 @@ export const useUserButtonContext = () => {
 };
 
 export const useOrganizationSwitcherContext = () => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as OrganizationSwitcherCtx;
+  const { componentName, ...ctx } = React.useContext(ComponentContext) || {};
   const { navigate } = useRouter();
   const { displayConfig } = useEnvironment();
 
@@ -518,7 +514,7 @@ export type OrganizationProfileContextType = OrganizationProfileCtx & {
 };
 
 export const useOrganizationProfileContext = (): OrganizationProfileContextType => {
-  const { componentName, customPages, ...ctx } = (React.useContext(ComponentContext) || {}) as OrganizationProfileCtx;
+  const { componentName, customPages, ...ctx } = React.useContext(ComponentContext) || {};
   const { navigate } = useRouter();
   const { displayConfig } = useEnvironment();
   const clerk = useClerk();
@@ -549,7 +545,7 @@ export const useOrganizationProfileContext = (): OrganizationProfileContextType 
 };
 
 export const useCreateOrganizationContext = () => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as CreateOrganizationCtx;
+  const { componentName, ...ctx } = React.useContext(ComponentContext) || {};
   const { navigate } = useRouter();
   const { displayConfig } = useEnvironment();
 
@@ -582,97 +578,13 @@ export const useCreateOrganizationContext = () => {
   };
 };
 
-export const useGoogleOneTapContext = () => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as GoogleOneTapCtx;
-  const options = useOptions();
-  const { displayConfig } = useEnvironment();
-  const { queryParams } = useRouter();
-
-  if (componentName !== 'GoogleOneTap') {
-    throw new Error('Clerk: useGoogleOneTapContext called outside GoogleOneTap.');
-  }
-
-  const generateCallbackUrls = useCallback(
-    (returnBackUrl: string): HandleOAuthCallbackParams => {
-      const redirectUrls = new RedirectUrls(
-        options,
-        {
-          ...ctx,
-          signInFallbackRedirectUrl: returnBackUrl,
-          signUpFallbackRedirectUrl: returnBackUrl,
-        },
-        queryParams,
-      );
-
-      let signUpUrl = options.signUpUrl || displayConfig.signUpUrl;
-      let signInUrl = options.signInUrl || displayConfig.signInUrl;
-
-      const preservedParams = redirectUrls.getPreservedSearchParams();
-      signInUrl = buildURL({ base: signInUrl, hashSearchParams: [queryParams, preservedParams] }, { stringify: true });
-      signUpUrl = buildURL({ base: signUpUrl, hashSearchParams: [queryParams, preservedParams] }, { stringify: true });
-
-      const signInForceRedirectUrl = redirectUrls.getAfterSignInUrl();
-      const signUpForceRedirectUrl = redirectUrls.getAfterSignUpUrl();
-
-      const signUpContinueUrl = buildURL(
-        {
-          base: signUpUrl,
-          hashPath: '/continue',
-          hashSearch: new URLSearchParams({
-            sign_up_force_redirect_url: signUpForceRedirectUrl,
-          }).toString(),
-        },
-        { stringify: true },
-      );
-
-      const firstFactorUrl = buildURL(
-        {
-          base: signInUrl,
-          hashPath: '/factor-one',
-          hashSearch: new URLSearchParams({
-            sign_in_force_redirect_url: signInForceRedirectUrl,
-          }).toString(),
-        },
-        { stringify: true },
-      );
-      const secondFactorUrl = buildURL(
-        {
-          base: signInUrl,
-          hashPath: '/factor-two',
-          hashSearch: new URLSearchParams({
-            sign_in_force_redirect_url: signInForceRedirectUrl,
-          }).toString(),
-        },
-        { stringify: true },
-      );
-
-      return {
-        signInUrl,
-        signUpUrl,
-        firstFactorUrl,
-        secondFactorUrl,
-        continueSignUpUrl: signUpContinueUrl,
-        signInForceRedirectUrl,
-        signUpForceRedirectUrl,
-      };
-    },
-    [ctx, displayConfig.signInUrl, displayConfig.signUpUrl, options, queryParams],
-  );
-
-  return {
-    ...ctx,
-    componentName,
-    generateCallbackUrls,
-  };
-};
-
 export type WaitlistContextType = WaitlistCtx & {
   signInUrl: string;
   redirectUrl?: string;
 };
 
 export const useWaitlistContext = (): WaitlistContextType => {
-  const { componentName, ...ctx } = (React.useContext(ComponentContext) || {}) as WaitlistCtx;
+  const { componentName, ...ctx } = React.useContext(ComponentContext) || {};
   const { displayConfig } = useEnvironment();
   const options = useOptions();
 

@@ -7,7 +7,6 @@ exports[`public exports should not include a breaking change 1`] = `
   "ClerkLoading",
   "ClerkProvider",
   "CreateOrganization",
-  "GoogleOneTap",
   "OrganizationList",
   "OrganizationProfile",
   "OrganizationSwitcher",

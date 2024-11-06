@@ -12,7 +12,6 @@ type FlowMetadata = {
     | 'createOrganization'
     | 'organizationSwitcher'
     | 'organizationList'
-    | 'oneTap'
     | 'waitlist';
   part?:
     | 'start'

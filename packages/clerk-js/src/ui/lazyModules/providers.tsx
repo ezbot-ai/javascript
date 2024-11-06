@@ -13,7 +13,6 @@ const AppearanceProvider = lazy(() => import('../customizables').then(m => ({ de
 const VirtualRouter = lazy(() => import('../router').then(m => ({ default: m.VirtualRouter })));
 const InternalThemeProvider = lazy(() => import('../styledSystem').then(m => ({ default: m.InternalThemeProvider })));
 const Portal = lazy(() => import('./../portal').then(m => ({ default: m.Portal })));
-const VirtualBodyRootPortal = lazy(() => import('./../portal').then(m => ({ default: m.VirtualBodyRootPortal })));
 const FlowMetadataProvider = lazy(() => import('./../elements').then(m => ({ default: m.FlowMetadataProvider })));
 const Modal = lazy(() => import('./../elements').then(m => ({ default: m.Modal })));
 const OrganizationSwitcherPrefetch = lazy(() =>
@@ -134,30 +133,6 @@ export const LazyImpersonationFabProvider = (
         </AppearanceProvider>
       </VirtualRouter>
     </Suspense>
-  );
-};
-
-type LazyOneTapRendererProps = React.PropsWithChildren<
-  {
-    componentProps: any;
-    startPath: string;
-  } & Omit<AppearanceProviderProps, 'appearanceKey'>
->;
-
-export const LazyOneTapRenderer = (props: LazyOneTapRendererProps) => {
-  return (
-    <AppearanceProvider
-      globalAppearance={props.globalAppearance}
-      appearanceKey={'oneTap'}
-      appearance={props.componentAppearance}
-    >
-      <VirtualBodyRootPortal
-        startPath={props.startPath}
-        component={ClerkComponents['GoogleOneTap']}
-        props={props.componentProps}
-        componentName={'GoogleOneTap'}
-      />
-    </AppearanceProvider>
   );
 };
 

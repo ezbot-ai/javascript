@@ -1,6 +1,6 @@
 import { inBrowser as inClientSide, isValidBrowserOnline } from '@clerk/shared/browser';
 import { deprecated } from '@clerk/shared/deprecated';
-import { ClerkRuntimeError, is4xxError, isClerkAPIResponseError } from '@clerk/shared/error';
+import { ClerkRuntimeError, is4xxError } from '@clerk/shared/error';
 import { parsePublishableKey } from '@clerk/shared/keys';
 import { LocalStorageBroadcastChannel } from '@clerk/shared/localStorageBroadcastChannel';
 import { logger } from '@clerk/shared/logger';
@@ -12,7 +12,6 @@ import type {
   __experimental_UserVerificationModalProps,
   ActiveSessionResource,
   AuthenticateWithCoinbaseWalletParams,
-  AuthenticateWithGoogleOneTapParams,
   AuthenticateWithMetamaskParams,
   Clerk as ClerkInterface,
   ClerkAPIError,
@@ -25,7 +24,6 @@ import type {
   DomainOrProxyUrl,
   EnvironmentJSON,
   EnvironmentResource,
-  GoogleOneTapProps,
   HandleEmailLinkVerificationParams,
   HandleOAuthCallbackParams,
   InstanceType,
@@ -383,19 +381,6 @@ export class Clerk implements ClerkInterface {
         redirectUrl,
       });
     }
-  };
-
-  public openGoogleOneTap = (props?: GoogleOneTapProps): void => {
-    // TODO: add telemetry
-    this.assertComponentsReady(this.#componentControls);
-    void this.#componentControls
-      .ensureMounted({ preloadHint: 'GoogleOneTap' })
-      .then(controls => controls.openModal('googleOneTap', props || {}));
-  };
-
-  public closeGoogleOneTap = (): void => {
-    this.assertComponentsReady(this.#componentControls);
-    void this.#componentControls.ensureMounted().then(controls => controls.closeModal('googleOneTap'));
   };
 
   public openSignIn = (props?: SignInProps): void => {
@@ -1203,31 +1188,6 @@ export class Clerk implements ClerkInterface {
     return null;
   };
 
-  public handleGoogleOneTapCallback = async (
-    signInOrUp: SignInResource | SignUpResource,
-    params: HandleOAuthCallbackParams,
-    customNavigate?: (to: string) => Promise<unknown>,
-  ): Promise<unknown> => {
-    if (!this.loaded || !this.environment || !this.client) {
-      return;
-    }
-    const { signIn: _signIn, signUp: _signUp } = this.client;
-
-    const signIn = 'identifier' in (signInOrUp || {}) ? (signInOrUp as SignInResource) : _signIn;
-    const signUp = 'missingFields' in (signInOrUp || {}) ? (signInOrUp as SignUpResource) : _signUp;
-
-    const navigate = (to: string) =>
-      customNavigate && typeof customNavigate === 'function'
-        ? customNavigate(this.buildUrlWithAuth(to))
-        : this.navigate(this.buildUrlWithAuth(to));
-
-    return this._handleRedirectCallback(params, {
-      signUp,
-      signIn,
-      navigate,
-    });
-  };
-
   private _handleRedirectCallback = async (
     params: HandleOAuthCallbackParams,
     {
@@ -1463,26 +1423,6 @@ export class Clerk implements ClerkInterface {
       this.#broadcastSignOutEvent();
     }
     return this.setActive({ session: null });
-  };
-
-  public authenticateWithGoogleOneTap = async (
-    params: AuthenticateWithGoogleOneTapParams,
-  ): Promise<SignInResource | SignUpResource> => {
-    return this.client?.signIn
-      .create({
-        strategy: 'google_one_tap',
-        token: params.token,
-      })
-      .catch(err => {
-        if (isClerkAPIResponseError(err) && err.errors[0].code === 'external_account_not_found') {
-          return this.client?.signUp.create({
-            strategy: 'google_one_tap',
-            token: params.token,
-            __experimental_legalAccepted: params.__experimental_legalAccepted,
-          });
-        }
-        throw err;
-      }) as Promise<SignInResource | SignUpResource>;
   };
 
   public authenticateWithMetamask = async (props: AuthenticateWithMetamaskParams = {}): Promise<void> => {

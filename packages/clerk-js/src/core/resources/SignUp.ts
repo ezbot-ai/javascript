@@ -1,4 +1,4 @@
-import { isCaptchaError, isClerkAPIResponseError } from '@clerk/shared/error';
+import { isClerkAPIResponseError } from '@clerk/shared/error';
 import { Poller } from '@clerk/shared/poller';
 import type {
   AttemptEmailAddressVerificationParams,
@@ -31,7 +31,6 @@ import {
   getMetamaskIdentifier,
   windowNavigate,
 } from '../../utils';
-import { getCaptchaToken, retrieveCaptchaInfo } from '../../utils/captcha';
 import { createValidatePassword } from '../../utils/passwords/password';
 import { normalizeUnsafeMetadata } from '../../utils/resourceParams';
 import {
@@ -40,7 +39,7 @@ import {
   clerkVerifyEmailAddressCalledBeforeCreate,
   clerkVerifyWeb3WalletCalledBeforeCreate,
 } from '../errors';
-import { BaseResource, ClerkRuntimeError, SignUpVerifications } from './internal';
+import { BaseResource, SignUpVerifications } from './internal';
 
 declare global {
   interface Window {
@@ -66,7 +65,6 @@ export class SignUp extends BaseResource implements SignUpResource {
   web3wallet: string | null = null;
   externalAccount: any;
   hasPassword = false;
-  unsafeMetadata: SignUpUnsafeMetadata = {};
   createdSessionId: string | null = null;
   createdUserId: string | null = null;
   abandonAt: number | null = null;
@@ -78,49 +76,9 @@ export class SignUp extends BaseResource implements SignUpResource {
   }
 
   create = async (params: SignUpCreateParams): Promise<SignUpResource> => {
-    const paramsWithCaptcha: Record<string, unknown> = params;
-    const { captchaSiteKey, canUseCaptcha, captchaURL, captchaWidgetType, captchaProvider, captchaPublicKeyInvisible } =
-      retrieveCaptchaInfo(SignUp.clerk);
-
-    if (
-      !this.shouldBypassCaptchaForAttempt(params) &&
-      canUseCaptcha &&
-      captchaSiteKey &&
-      captchaURL &&
-      captchaPublicKeyInvisible
-    ) {
-      try {
-        const { captchaToken, captchaWidgetTypeUsed } = await getCaptchaToken({
-          siteKey: captchaSiteKey,
-          widgetType: captchaWidgetType,
-          invisibleSiteKey: captchaPublicKeyInvisible,
-          scriptUrl: captchaURL,
-          captchaProvider,
-        });
-        paramsWithCaptcha.captchaToken = captchaToken;
-        paramsWithCaptcha.captchaWidgetType = captchaWidgetTypeUsed;
-      } catch (e) {
-        if (e.captchaError) {
-          paramsWithCaptcha.captchaError = e.captchaError;
-        } else {
-          throw new ClerkRuntimeError(e.message, { code: 'captcha_unavailable' });
-        }
-      }
-    }
-
-    if (params.transfer && this.shouldBypassCaptchaForAttempt(params)) {
-      paramsWithCaptcha.strategy = SignUp.clerk.client?.signIn.firstFactorVerification.strategy;
-    }
-
-    // TODO(@vaggelis): Remove this once the legalAccepted is stable
-    if (typeof params.__experimental_legalAccepted !== 'undefined') {
-      paramsWithCaptcha.legalAccepted = params.__experimental_legalAccepted;
-      paramsWithCaptcha.__experimental_legalAccepted = undefined;
-    }
-
     return this._basePost({
       path: this.pathRoot,
-      body: normalizeUnsafeMetadata(paramsWithCaptcha),
+      body: normalizeUnsafeMetadata(params),
     });
   };
 
@@ -299,10 +257,7 @@ export class SignUp extends BaseResource implements SignUpResource {
     };
 
     const { verifications } = await authenticateFn().catch(async e => {
-      // If captcha verification failed because the environment has changed, we need
-      // to reload the environment and try again one more time with the new environment.
-      // If this fails again, we will let the caller handle the error accordingly.
-      if (isClerkAPIResponseError(e) && isCaptchaError(e)) {
+      if (isClerkAPIResponseError(e)) {
         await SignUp.clerk.__unstable__environment!.reload();
         return authenticateFn();
       }
@@ -364,29 +319,5 @@ export class SignUp extends BaseResource implements SignUpResource {
       this.legalAcceptedAt = data.legal_accepted_at;
     }
     return this;
-  }
-
-  /**
-   * We delegate bot detection to the following providers, instead of relying on turnstile exclusively
-   */
-  protected shouldBypassCaptchaForAttempt(params: SignUpCreateParams) {
-    if (!params.strategy) {
-      return false;
-    }
-
-    const captchaOauthBypass = SignUp.clerk.__unstable__environment!.displayConfig.captchaOauthBypass;
-
-    if (captchaOauthBypass.some(strategy => strategy === params.strategy)) {
-      return true;
-    }
-
-    if (
-      params.transfer &&
-      captchaOauthBypass.some(strategy => strategy === SignUp.clerk.client!.signIn.firstFactorVerification.strategy)
-    ) {
-      return true;
-    }
-
-    return false;
   }
 }

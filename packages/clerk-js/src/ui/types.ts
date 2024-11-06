@@ -1,7 +1,6 @@
 import type {
   __experimental_UserVerificationProps,
   CreateOrganizationProps,
-  GoogleOneTapProps,
   OrganizationListProps,
   OrganizationProfileProps,
   OrganizationSwitcherProps,
@@ -13,7 +12,6 @@ import type {
 } from '@clerk/types';
 
 export type {
-  GoogleOneTapProps,
   SignInProps,
   SignUpProps,
   UserButtonProps,
@@ -84,11 +82,6 @@ export type OrganizationListCtx = OrganizationListProps & {
   componentName: 'OrganizationList';
   mode?: ComponentMode;
 };
-
-export type GoogleOneTapCtx = GoogleOneTapProps & {
-  componentName: 'GoogleOneTap';
-};
-
 export type WaitlistCtx = WaitlistProps & {
   componentName: 'Waitlist';
   mode?: ComponentMode;
@@ -104,5 +97,4 @@ export type AvailableComponentCtx =
   | CreateOrganizationCtx
   | OrganizationSwitcherCtx
   | OrganizationListCtx
-  | GoogleOneTapCtx
   | WaitlistCtx;
