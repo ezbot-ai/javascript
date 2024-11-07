@@ -76,7 +76,7 @@
     "test:ci": "jest --maxWorkers=70%"
   },
   "dependencies": {
-    "@clerk/shared": "2.11.5",
+    "@clerk/shared": "file:../shared",
     "@clerk/types": "4.30.0",
     "tslib": "2.4.1"
   },

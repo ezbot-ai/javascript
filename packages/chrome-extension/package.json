@@ -47,9 +47,9 @@
     "test:coverage": "jest --collectCoverage && open coverage/lcov-report/index.html"
   },
   "dependencies": {
-    "@clerk/clerk-js": "5.31.2",
-    "@clerk/clerk-react": "5.15.1",
-    "@clerk/shared": "2.11.5",
+    "@clerk/clerk-js": "file:../clerk-js",
+    "@clerk/clerk-react": "file:../react",
+    "@clerk/shared": "file:../shared",
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
