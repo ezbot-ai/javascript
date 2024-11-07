@@ -8,10 +8,13 @@ import React from 'react';
 import { useSafeLayoutEffect } from '../client-boundary/hooks/useSafeLayoutEffect';
 import { ClerkNextOptionsProvider } from '../client-boundary/NextOptionsContext';
 import type { NextClerkProviderProps } from '../types';
-import { ClerkJSScript } from '../utils/clerk-js-script';
 import { invalidateNextRouterCache } from '../utils/invalidateNextRouterCache';
 import { mergeNextClerkPropsWithEnv } from '../utils/mergeNextClerkPropsWithEnv';
 import { removeBasePath } from '../utils/removeBasePath';
+
+if (!React) {
+  throw new Error('ClerkProvider requires React to be available');
+}
 
 setErrorThrowerOptions({ packageName: PACKAGE_NAME });
 setClerkJsLoadingErrorPackageName(PACKAGE_NAME);
@@ -86,7 +89,6 @@ export function ClerkProvider({ children, ...props }: NextClerkProviderProps): J
         {...mergedProps}
         initialState={initialState}
       >
-        <ClerkJSScript router='pages' />
         {children}
       </ReactClerkProvider>
     </ClerkNextOptionsProvider>

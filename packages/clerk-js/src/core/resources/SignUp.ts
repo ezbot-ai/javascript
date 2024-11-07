@@ -31,7 +31,6 @@ import {
   getMetamaskIdentifier,
   windowNavigate,
 } from '../../utils';
-import { getCaptchaToken, retrieveCaptchaInfo } from '../../utils/captcha';
 import { createValidatePassword } from '../../utils/passwords/password';
 import { normalizeUnsafeMetadata } from '../../utils/resourceParams';
 import {
@@ -40,7 +39,7 @@ import {
   clerkVerifyEmailAddressCalledBeforeCreate,
   clerkVerifyWeb3WalletCalledBeforeCreate,
 } from '../errors';
-import { BaseResource, ClerkRuntimeError, SignUpVerifications } from './internal';
+import { BaseResource, SignUpVerifications } from './internal';
 
 declare global {
   interface Window {
@@ -79,34 +78,6 @@ export class SignUp extends BaseResource implements SignUpResource {
 
   create = async (params: SignUpCreateParams): Promise<SignUpResource> => {
     const paramsWithCaptcha: Record<string, unknown> = params;
-    const { captchaSiteKey, canUseCaptcha, captchaURL, captchaWidgetType, captchaProvider, captchaPublicKeyInvisible } =
-      retrieveCaptchaInfo(SignUp.clerk);
-
-    if (
-      !this.shouldBypassCaptchaForAttempt(params) &&
-      canUseCaptcha &&
-      captchaSiteKey &&
-      captchaURL &&
-      captchaPublicKeyInvisible
-    ) {
-      try {
-        const { captchaToken, captchaWidgetTypeUsed } = await getCaptchaToken({
-          siteKey: captchaSiteKey,
-          widgetType: captchaWidgetType,
-          invisibleSiteKey: captchaPublicKeyInvisible,
-          scriptUrl: captchaURL,
-          captchaProvider,
-        });
-        paramsWithCaptcha.captchaToken = captchaToken;
-        paramsWithCaptcha.captchaWidgetType = captchaWidgetTypeUsed;
-      } catch (e) {
-        if (e.captchaError) {
-          paramsWithCaptcha.captchaError = e.captchaError;
-        } else {
-          throw new ClerkRuntimeError(e.message, { code: 'captcha_unavailable' });
-        }
-      }
-    }
 
     if (params.transfer && this.shouldBypassCaptchaForAttempt(params)) {
       paramsWithCaptcha.strategy = SignUp.clerk.client?.signIn.firstFactorVerification.strategy;

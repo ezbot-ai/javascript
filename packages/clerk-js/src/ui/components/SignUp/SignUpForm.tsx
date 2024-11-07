@@ -2,7 +2,6 @@ import React from 'react';
 
 import { Col, localizationKeys, useAppearance } from '../../customizables';
 import { Form, LegalCheckbox } from '../../elements';
-import { CaptchaElement } from '../../elements/CaptchaElement';
 import { mqu } from '../../styledSystem';
 import type { FormControlState } from '../../utils';
 import type { ActiveIdentifier, Fields } from './signUpFormHelpers';
@@ -113,7 +112,6 @@ export const SignUpForm = (props: SignUpFormProps) => {
         </Col>
       )}
       <Col center>
-        <CaptchaElement />
         <Col
           gap={6}
           sx={{

@@ -1,5 +1,3 @@
-import { loadScript } from '@clerk/shared/loadScript';
-
 import { clerkFailedToLoadThirdPartyScript } from '../core/errors';
 
 interface GISCredentialResponse {
@@ -41,14 +39,9 @@ declare global {
 
 async function loadGIS() {
   if (!window.google) {
-    try {
-      await loadScript('https://accounts.google.com/gsi/client', { defer: true });
-    } catch (_) {
-      // Rethrow with specific message
-      clerkFailedToLoadThirdPartyScript('Google Identity Services');
-    }
+    clerkFailedToLoadThirdPartyScript('Google Identity Services');
   }
-  return window.google as Google;
+  return window.google;
 }
 
 export { loadGIS };

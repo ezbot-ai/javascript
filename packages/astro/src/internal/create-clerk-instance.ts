@@ -1,4 +1,4 @@
-import { loadClerkJsScript, setClerkJsLoadingErrorPackageName } from '@clerk/shared/loadClerkJsScript';
+import { setClerkJsLoadingErrorPackageName } from '@clerk/shared/loadClerkJsScript';
 import type { ClerkOptions } from '@clerk/types';
 
 import { $clerkStore } from '../stores/external';
@@ -32,10 +32,8 @@ const createClerkInstance = runOnce(createClerkInstanceInternal);
 async function createClerkInstanceInternal(options?: AstroClerkCreateInstanceParams) {
   let clerkJSInstance = window.Clerk;
   if (!clerkJSInstance) {
-    await loadClerkJsScript(options);
-
     if (!window.Clerk) {
-      throw new Error('Failed to download latest ClerkJS. Contact support@clerk.com.');
+      throw new Error('Failed to download latest ClerkJS and not found globally.');
     }
     clerkJSInstance = window.Clerk;
   }

@@ -3,8 +3,4 @@ export { MultisessionAppSupport } from './components/controlComponents';
 export { useRoutingProps } from './hooks/useRoutingProps';
 export { useDerivedAuth } from './hooks/useAuth';
 
-export {
-  clerkJsScriptUrl,
-  buildClerkJsScriptAttributes,
-  setClerkJsLoadingErrorPackageName,
-} from '@clerk/shared/loadClerkJsScript';
+export { setClerkJsLoadingErrorPackageName } from '@clerk/shared/loadClerkJsScript';

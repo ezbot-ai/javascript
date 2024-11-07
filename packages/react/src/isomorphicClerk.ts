@@ -1,5 +1,4 @@
 import { inBrowser } from '@clerk/shared/browser';
-import { loadClerkJsScript } from '@clerk/shared/loadClerkJsScript';
 import type { TelemetryCollector } from '@clerk/shared/telemetry';
 import { handleValueOrFn } from '@clerk/shared/utils';
 import type {
@@ -462,19 +461,8 @@ export class IsomorphicClerk implements IsomorphicLoadedClerk {
 
         global.Clerk = c;
       } else {
-        // Hot-load latest ClerkJS from Clerk CDN
         if (!global.Clerk) {
-          await loadClerkJsScript({
-            ...this.options,
-            publishableKey: this.#publishableKey,
-            proxyUrl: this.proxyUrl,
-            domain: this.domain,
-            nonce: this.options.nonce,
-          });
-        }
-
-        if (!global.Clerk) {
-          throw new Error('Failed to download latest ClerkJS. Contact support@clerk.com.');
+          throw new Error('Failed to download latest ClerkJS and no global Clerk found');
         }
 
         await global.Clerk.load(this.options);
